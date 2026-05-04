@@ -1,0 +1,41 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" },
+        "createdAt": { "type": "number" }
+      },
+      "required": ["email", "createdAt"]
+    },
+    "Item": {
+      "title": "Item",
+      "description": "Saved content (link, photo, screenshot)",
+      "type": "object",
+      "properties": {
+        "type": { "type": "string", "enum": ["link", "image", "screenshot"] },
+        "url": { "type": "string", "description": "URL or base64 string (size limited)" },
+        "title": { "type": "string" },
+        "aiNotes": { "type": "string" },
+        "category": { "type": "string" },
+        "rating": { "type": "number" },
+        "tags": { "type": "array", "items": { "type": "string" } },
+        "createdAt": { "type": "number" },
+        "updatedAt": { "type": "number" }
+      },
+      "required": ["type", "url", "title", "category", "rating", "tags", "createdAt", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "User profiles stored safely per user"
+    },
+    "users/{userId}/items/{itemId}": {
+      "schema": { "$ref": "#/entities/Item" },
+      "description": "Items belonging to a specific user"
+    }
+  }
+}

@@ -1,0 +1,80 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+    
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+    function incoming() {
+      return request.resource.data;
+    }
+    function existing() {
+      return resource.data;
+    }
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['email', 'createdAt']) && 
+             data.keys().size() == 2 &&
+             data.email is string && data.email.size() <= 256 &&
+             data.createdAt == request.time;
+    }
+    
+    function isValidItemCreate(data) {
+      return data.keys().hasAll(['type', 'url', 'title', 'aiNotes', 'category', 'rating', 'tags', 'isFavorite', 'createdAt', 'updatedAt']) &&
+             data.type is string && data.type in ['link', 'image', 'screenshot'] &&
+             data.url is string && 
+             data.title is string && 
+             data.aiNotes is string && 
+             data.category is string && 
+             data.rating is number && data.rating >= 0 && data.rating <= 5 &&
+             data.tags is list && 
+             data.isFavorite is bool &&
+             data.createdAt == request.time &&
+             data.updatedAt == request.time;
+    }
+
+    function isValidItemUpdate(data) {
+      return data.type is string && data.type in ['link', 'image', 'screenshot'] &&
+             data.url is string && 
+             data.title is string && 
+             data.aiNotes is string && 
+             data.category is string && 
+             data.rating is number && data.rating >= 0 && data.rating <= 5 &&
+             data.tags is list && 
+             data.isFavorite is bool &&
+             data.updatedAt == request.time;
+    }
+
+    match /users/{userId} {
+      allow read: if isOwner(userId) && isValidId(userId);
+      allow create: if isOwner(userId) && isValidId(userId) && isValidUser(incoming());
+      // Disallow user updates for security (only email and createdAt defined)
+      allow update: if false; 
+      allow delete: if false;
+      
+      match /items/{itemId} {
+        allow read: if isOwner(userId) && isValidId(userId) && isValidId(itemId);
+        allow list: if isOwner(userId) && isValidId(userId);
+        
+        allow create: if isOwner(userId) && isValidId(userId) && isValidId(itemId) &&
+                      isValidItemCreate(incoming());
+                      
+        allow update: if isOwner(userId) && isValidId(userId) && isValidId(itemId) &&
+                      isValidItemUpdate(incoming()) &&
+                      incoming().createdAt == existing().createdAt &&
+                      incoming().diff(existing()).affectedKeys().hasOnly(['type', 'url', 'title', 'aiNotes', 'category', 'rating', 'tags', 'isFavorite', 'updatedAt']);
+                      
+        allow delete: if isOwner(userId) && isValidId(userId) && isValidId(itemId);
+      }
+    }
+  }
+}
