@@ -6,8 +6,6 @@ interface ThemeContextType {
   theme: Theme;
   setTheme: (theme: Theme) => void;
   resolvedTheme: 'light' | 'dark';
-  useMaterialYou: boolean;
-  setUseMaterialYou: (use: boolean) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -15,10 +13,6 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>(() => {
     return (localStorage.getItem('app-theme') as Theme) || 'system';
-  });
-  
-  const [useMaterialYou, setUseMaterialYou] = useState<boolean>(() => {
-    return localStorage.getItem('app-material-you') === 'true';
   });
   
   const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('light');
@@ -39,16 +33,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     }
   }, [theme]);
 
-  useEffect(() => {
-    localStorage.setItem('app-material-you', String(useMaterialYou));
-    // Implementation placeholder for dynamic colors
-    if (useMaterialYou) {
-      document.documentElement.style.setProperty('--primary', '#6366f1'); // Keep stable for now, ideally extracted from system
-    } else {
-      document.documentElement.style.removeProperty('--primary');
-    }
-  }, [useMaterialYou]);
-
   // Listen to system theme changes
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
@@ -67,7 +51,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, [theme]);
 
   return (
-    <ThemeContext.Provider value={{ theme, setTheme, resolvedTheme, useMaterialYou, setUseMaterialYou }}>
+    <ThemeContext.Provider value={{ theme, setTheme, resolvedTheme }}>
       {children}
     </ThemeContext.Provider>
   );

@@ -54,7 +54,7 @@ export default function Login() {
             <Zap className="w-8 h-8 text-white" fill="none" stroke="currentColor" strokeWidth={1.5} />
           </div>
           <div className="text-center">
-             <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100 font-sans">SmartSave</h1>
+             <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100 font-sans">BrainSpace</h1>
              <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-1">Your AI-powered knowledge base</p>
           </div>
         </div>
